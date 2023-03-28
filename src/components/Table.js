@@ -2,11 +2,15 @@ import { useContext, useEffect } from 'react';
 import AppContext from '../context/AppContext';
 
 export default function Table() {
-  const { result, fetchData } = useContext(AppContext);
+  const { result, fetchData, filter, setInputFilter } = useContext(AppContext);
+
   const titles = ['Name', 'Rotation Period',
     'Orbital Period', 'Diameter', 'Climate', 'Gravity',
     'Terrain', 'Surface Water', 'Population',
     'Films', 'Created', 'Edited', 'Url'];
+
+  const nameFiltered = result.filter((planet) => planet.name
+    .includes(filter.name));
 
   useEffect(() => {
     async function getList() {
@@ -16,20 +20,41 @@ export default function Table() {
     getList();
   }, [fetchData]);
 
+  function handleChange({ target: { name, value } }) {
+    setInputFilter({
+      ...filter,
+      [name]: value,
+    });
+  }
+
   return (
     <div>
+      <br />
+      <section>
+        <label htmlFor="inputFilter">
+          <input
+            type="text"
+            id="nameFilter"
+            name="name"
+            value={ filter.name }
+            onChange={ handleChange }
+            data-testid="name-filter"
+          />
+        </label>
+      </section>
+      <br />
+      <hr />
+      <br />
       <table>
         <thead>
           <tr>
-            {
-              titles.map((e) => (
-                <th key={ e }>{e}</th>
-              ))
-            }
+            {titles.map((e) => (
+              <th key={ e }>{e}</th>
+            ))}
           </tr>
         </thead>
         <tbody>
-          {result.map((e) => (
+          {nameFiltered.map((e) => (
             <tr key={ e.url }>
               <td>{ e.name }</td>
               <td>{ e.rotation_period }</td>

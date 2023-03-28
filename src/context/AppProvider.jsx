@@ -4,6 +4,7 @@ import AppContext from './AppContext';
 
 function AppProvider({ children }) {
   const [result, setResults] = useState([]);
+  const [filter, setInputFilter] = useState({ name: '' });
 
   const fetchData = useCallback(async () => {
     const response = await fetch('https://swapi.dev/api/planets');
@@ -16,6 +17,8 @@ function AppProvider({ children }) {
   const values = {
     result,
     fetchData,
+    filter,
+    setInputFilter,
   };
 
   return (

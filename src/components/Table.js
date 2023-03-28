@@ -2,15 +2,16 @@ import { useContext, useEffect } from 'react';
 import AppContext from '../context/AppContext';
 
 export default function Table() {
-  const { result, fetchData, filter, setInputFilter } = useContext(AppContext);
+  const { result, setResults, fetchData, filter,
+    setInputFilter, btnFilter, setBtnFilter } = useContext(AppContext);
 
   const titles = ['Name', 'Rotation Period',
     'Orbital Period', 'Diameter', 'Climate', 'Gravity',
     'Terrain', 'Surface Water', 'Population',
     'Films', 'Created', 'Edited', 'Url'];
 
-  const nameFiltered = result.filter((planet) => planet.name
-    .includes(filter.name));
+  let nameFiltered = result.filter((planet) => planet.name.toUpperCase()
+    .includes(filter.name.toUpperCase()));
 
   useEffect(() => {
     async function getList() {
@@ -20,6 +21,24 @@ export default function Table() {
     getList();
   }, [fetchData]);
 
+  function handleClick() {
+    const { column, comparison, value } = btnFilter;
+    switch (comparison) {
+    case 'maior que':
+      nameFiltered = result
+        .filter((item) => Number(item[column]) > Number(value));
+      break;
+    case 'menor que':
+      nameFiltered = result
+        .filter((item) => Number(item[column]) < Number(value));
+      break;
+    default:
+      nameFiltered = result
+        .filter((item) => Number(item[column]) === Number(value));
+    }
+    setResults(nameFiltered);
+  }
+
   function handleChange({ target: { name, value } }) {
     setInputFilter({
       ...filter,
@@ -27,10 +46,17 @@ export default function Table() {
     });
   }
 
+  const handleFilters = ({ target: { name, value } }) => {
+    setBtnFilter({
+      ...btnFilter,
+      [name]: value,
+    });
+  };
+
   return (
     <div>
       <br />
-      <section>
+      <div>
         <label htmlFor="inputFilter">
           <input
             type="text"
@@ -41,7 +67,49 @@ export default function Table() {
             data-testid="name-filter"
           />
         </label>
-      </section>
+      </div>
+      <br />
+      <div>
+        <select
+          id="column"
+          name="column"
+          value={ btnFilter.column }
+          onChange={ handleFilters }
+          data-testid="column-filter"
+        >
+          <option defaultValue value="population">population</option>
+          <option value="orbital_period">orbital_period</option>
+          <option value="diameter">diameter</option>
+          <option value="rotation_period">rotation_period</option>
+          <option value="surface_water">surface_water</option>
+        </select>
+        <select
+          id="comparisonFilter"
+          name="comparison"
+          value={ btnFilter.comparison }
+          onChange={ handleFilters }
+          data-testid="comparison-filter"
+        >
+          <option defaultValue value="maior que">maior que</option>
+          <option value="menor que">menor que</option>
+          <option value="igual a">igual a</option>
+        </select>
+        <input
+          type="number"
+          id="numberInput"
+          name="value"
+          value={ btnFilter.value }
+          onChange={ handleFilters }
+          data-testid="value-filter"
+        />
+        <button
+          type="button"
+          data-testid="button-filter"
+          onClick={ handleClick }
+        >
+          Filtrar
+        </button>
+      </div>
       <br />
       <hr />
       <br />

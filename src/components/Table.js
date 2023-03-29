@@ -2,8 +2,23 @@ import { useContext, useEffect } from 'react';
 import AppContext from '../context/AppContext';
 
 export default function Table() {
-  const { result, setResults, fetchData, filter,
-    setInputFilter, btnFilter, setBtnFilter } = useContext(AppContext);
+  const { result, fetchData, filter,
+    setInputFilter, btnFilter, setBtnFilter,
+    setFilters, filtersOn } = useContext(AppContext);
+
+  const columnFilterOriginal = [
+    'population',
+    'orbital_period',
+    'diameter',
+    'rotation_period',
+    'surface_water',
+  ];
+
+  let columnFilter = columnFilterOriginal;
+
+  columnFilter = columnFilter
+    .filter((element) => !filtersOn.filtersList
+      .find(({ column }) => element === column));
 
   const titles = ['Name', 'Rotation Period',
     'Orbital Period', 'Diameter', 'Climate', 'Gravity',
@@ -12,6 +27,21 @@ export default function Table() {
 
   let nameFiltered = result.filter((planet) => planet.name.toUpperCase()
     .includes(filter.name.toUpperCase()));
+
+  filtersOn.filtersList.forEach(({ column, comparison, value }) => {
+    nameFiltered = nameFiltered.filter((e) => {
+      switch (comparison) {
+      case 'maior que':
+        return Number(e[column]) > Number(value);
+      case 'menor que':
+        return Number(e[column]) < Number(value);
+      case 'igual a':
+        return Number(e[column]) === Number(value);
+      default:
+        return true;
+      }
+    });
+  });
 
   useEffect(() => {
     async function getList() {
@@ -22,21 +52,9 @@ export default function Table() {
   }, [fetchData]);
 
   function handleClick() {
-    const { column, comparison, value } = btnFilter;
-    switch (comparison) {
-    case 'maior que':
-      nameFiltered = result
-        .filter((item) => Number(item[column]) > Number(value));
-      break;
-    case 'menor que':
-      nameFiltered = result
-        .filter((item) => Number(item[column]) < Number(value));
-      break;
-    default:
-      nameFiltered = result
-        .filter((item) => Number(item[column]) === Number(value));
-    }
-    setResults(nameFiltered);
+    setFilters((prevState) => ({
+      filtersList: [...prevState.filtersList, btnFilter],
+    }));
   }
 
   function handleChange({ target: { name, value } }) {
@@ -51,6 +69,21 @@ export default function Table() {
       ...btnFilter,
       [name]: value,
     });
+  };
+
+  const handleExclude = ({ target: { name } }) => {
+    if (name === 'excludeAll') {
+      setFilters({
+        filtersList: [],
+      });
+    } else {
+      console.log(name);
+      const newfiltersList = filtersOn.filtersList.filter((e) => e.column !== name);
+      console.log(newfiltersList);
+      setFilters({
+        filtersList: newfiltersList,
+      });
+    }
   };
 
   return (
@@ -75,13 +108,13 @@ export default function Table() {
           name="column"
           value={ btnFilter.column }
           onChange={ handleFilters }
+          onClick={ handleFilters }
           data-testid="column-filter"
         >
-          <option defaultValue value="population">population</option>
-          <option value="orbital_period">orbital_period</option>
-          <option value="diameter">diameter</option>
-          <option value="rotation_period">rotation_period</option>
-          <option value="surface_water">surface_water</option>
+          { columnFilter
+            .map((item, index) => (
+              <option key={ index } value={ item }>{ item }</option>
+            ))}
         </select>
         <select
           id="comparisonFilter"
@@ -109,6 +142,35 @@ export default function Table() {
         >
           Filtrar
         </button>
+        <button
+          type="button"
+          name="excludeAll"
+          onClick={ handleExclude }
+          data-testid="button-remove-filters"
+        >
+          Remover todas filtragens
+        </button>
+      </div>
+      <br />
+      <div>
+        { filtersOn.filtersList
+          .map((item, index) => (
+            <div key={ index } value={ item } data-testid="filter">
+              { item.column }
+              {' '}
+              {item.comparison}
+              {' '}
+              { item.value}
+              {item.column && (
+                <button
+                  type="button"
+                  name={ item.column }
+                  onClick={ handleExclude }
+                >
+                  Excluir
+                </button>)}
+            </div>
+          ))}
       </div>
       <br />
       <hr />

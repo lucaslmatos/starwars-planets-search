@@ -11,6 +11,10 @@ function AppProvider({ children }) {
     value: 0,
   });
 
+  const [filtersOn, setFilters] = useState({
+    filtersList: [],
+  });
+
   const fetchData = useCallback(async () => {
     const response = await fetch('https://swapi.dev/api/planets');
     const fetchedData = await response.json();
@@ -27,6 +31,8 @@ function AppProvider({ children }) {
     setInputFilter,
     btnFilter,
     setBtnFilter,
+    filtersOn,
+    setFilters,
   };
 
   return (

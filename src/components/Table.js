@@ -2,29 +2,19 @@ import { useContext, useEffect } from 'react';
 import AppContext from '../context/AppContext';
 
 export default function Table() {
-  const { result, fetchData, filter,
-    setInputFilter, btnFilter, setBtnFilter,
-    setFilters, filtersOn } = useContext(AppContext);
-
+  const { result, fetchData, filter, setInputFilter, btnFilter, setBtnFilter,
+    setFilters, filtersOn, setBtnOrder, btnOrder, setResults } = useContext(AppContext);
   const columnFilterOriginal = [
-    'population',
-    'orbital_period',
-    'diameter',
-    'rotation_period',
-    'surface_water',
+    'population', 'orbital_period', 'diameter', 'rotation_period', 'surface_water',
   ];
-
   let columnFilter = columnFilterOriginal;
-
   columnFilter = columnFilter
     .filter((element) => !filtersOn.filtersList
       .find(({ column }) => element === column));
-
   const titles = ['Name', 'Rotation Period',
     'Orbital Period', 'Diameter', 'Climate', 'Gravity',
     'Terrain', 'Surface Water', 'Population',
     'Films', 'Created', 'Edited', 'Url'];
-
   let nameFiltered = result.filter((planet) => planet.name.toUpperCase()
     .includes(filter.name.toUpperCase()));
 
@@ -51,10 +41,26 @@ export default function Table() {
     getList();
   }, [fetchData]);
 
-  function handleClick() {
-    setFilters((prevState) => ({
-      filtersList: [...prevState.filtersList, btnFilter],
-    }));
+  function handleClick({ target: { name } }) {
+    if (name === 'numberFilter') {
+      setFilters((prevState) => ({
+        filtersList: [...prevState.filtersList, btnFilter],
+      }));
+    }
+    if (name === 'Order') {
+      if (btnOrder.sort === 'ASC') {
+        nameFiltered
+          .sort((a, b) => Number(b[btnOrder.column]) - Number(a[btnOrder.column]));
+        nameFiltered
+          .sort((a, b) => Number(a[btnOrder.column]) - Number(b[btnOrder.column]));
+        setResults(nameFiltered);
+      }
+      if (btnOrder.sort === 'DESC') {
+        nameFiltered
+          .sort((a, b) => Number(b[btnOrder.column]) - Number(a[btnOrder.column]));
+        setResults(nameFiltered);
+      }
+    }
   }
 
   function handleChange({ target: { name, value } }) {
@@ -73,27 +79,26 @@ export default function Table() {
 
   const handleExclude = ({ target: { name } }) => {
     if (name === 'excludeAll') {
-      setFilters({
-        filtersList: [],
-      });
+      setFilters({ filtersList: [] });
     } else {
-      console.log(name);
       const newfiltersList = filtersOn.filtersList.filter((e) => e.column !== name);
-      console.log(newfiltersList);
-      setFilters({
-        filtersList: newfiltersList,
-      });
+      setFilters({ filtersList: newfiltersList });
     }
+  };
+
+  const handleOrder = ({ target: { name, value } }) => {
+    setBtnOrder({
+      ...btnOrder,
+      [name]: value,
+    });
   };
 
   return (
     <div>
-      <br />
       <div>
         <label htmlFor="inputFilter">
           <input
             type="text"
-            id="nameFilter"
             name="name"
             value={ filter.name }
             onChange={ handleChange }
@@ -104,7 +109,6 @@ export default function Table() {
       <br />
       <div>
         <select
-          id="column"
           name="column"
           value={ btnFilter.column }
           onChange={ handleFilters }
@@ -117,7 +121,6 @@ export default function Table() {
             ))}
         </select>
         <select
-          id="comparisonFilter"
           name="comparison"
           value={ btnFilter.comparison }
           onChange={ handleFilters }
@@ -128,7 +131,6 @@ export default function Table() {
           <option value="igual a">igual a</option>
         </select>
         <input
-          type="number"
           id="numberInput"
           name="value"
           value={ btnFilter.value }
@@ -137,6 +139,7 @@ export default function Table() {
         />
         <button
           type="button"
+          name="numberFilter"
           data-testid="button-filter"
           onClick={ handleClick }
         >
@@ -150,8 +153,47 @@ export default function Table() {
         >
           Remover todas filtragens
         </button>
+        <select
+          name="column"
+          value={ btnOrder.column }
+          onChange={ handleOrder }
+          onClick={ handleOrder }
+          data-testid="column-sort"
+        >
+          { columnFilter
+            .map((item, index) => (
+              <option key={ index } value={ item }>{ item }</option>
+            ))}
+        </select>
+        <label htmlFor="ASC">
+          <input
+            type="radio"
+            name="sort"
+            value="ASC"
+            onClick={ handleOrder }
+            data-testid="column-sort-input-asc"
+          />
+          Ascendente
+        </label>
+        <label htmlFor="DESC">
+          <input
+            type="radio"
+            name="sort"
+            value="DESC"
+            onClick={ handleOrder }
+            data-testid="column-sort-input-desc"
+          />
+          Descendente
+        </label>
+        <button
+          type="button"
+          name="Order"
+          data-testid="column-sort-button"
+          onClick={ handleClick }
+        >
+          Ordenar
+        </button>
       </div>
-      <br />
       <div>
         { filtersOn.filtersList
           .map((item, index) => (
@@ -186,7 +228,7 @@ export default function Table() {
         <tbody>
           {nameFiltered.map((e) => (
             <tr key={ e.url }>
-              <td>{ e.name }</td>
+              <td data-testid="planet-name">{ e.name }</td>
               <td>{ e.rotation_period }</td>
               <td>{ e.orbital_period }</td>
               <td>{ e.diameter }</td>

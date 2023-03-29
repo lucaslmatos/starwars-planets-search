@@ -10,9 +10,12 @@ function AppProvider({ children }) {
     comparison: 'maior que',
     value: 0,
   });
-
   const [filtersOn, setFilters] = useState({
     filtersList: [],
+  });
+  const [btnOrder, setBtnOrder] = useState({
+    column: 'population',
+    sort: 'ASC',
   });
 
   const fetchData = useCallback(async () => {
@@ -33,6 +36,8 @@ function AppProvider({ children }) {
     setBtnFilter,
     filtersOn,
     setFilters,
+    btnOrder,
+    setBtnOrder,
   };
 
   return (

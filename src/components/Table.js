@@ -46,16 +46,14 @@ export default function Table() {
       }));
     }
     if (name === 'Order') {
+      nameFiltered
+        .sort((a, b) => Number(b[btnOrder.column]) - Number(a[btnOrder.column]));
       if (btnOrder.sort === 'ASC') {
-        nameFiltered
-          .sort((a, b) => Number(b[btnOrder.column]) - Number(a[btnOrder.column]));
         nameFiltered
           .sort((a, b) => Number(a[btnOrder.column]) - Number(b[btnOrder.column]));
         setResults(nameFiltered);
       }
       if (btnOrder.sort === 'DESC') {
-        nameFiltered
-          .sort((a, b) => Number(b[btnOrder.column]) - Number(a[btnOrder.column]));
         setResults(nameFiltered);
       }
     }

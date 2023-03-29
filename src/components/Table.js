@@ -25,10 +25,8 @@ export default function Table() {
         return Number(e[column]) > Number(value);
       case 'menor que':
         return Number(e[column]) < Number(value);
-      case 'igual a':
-        return Number(e[column]) === Number(value);
       default:
-        return true;
+        return Number(e[column]) === Number(value);
       }
     });
   });
